@@ -49,7 +49,7 @@ def dumps_file_list(opt):
     if opt.output_file == "-":
         _file = sys.stdout
     else:
-        _file = open(opt.output_file, 'w', encoding='utf-8')
+        _file = open(opt.output_file, 'w') 
 
     dfs_(client, opt.bucket, '/', with_dir=opt.with_directory, file=_file)
 
