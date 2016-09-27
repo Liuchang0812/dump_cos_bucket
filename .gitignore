@@ -1,0 +1,6 @@
+build/
+cos_dumps_file_list.egg-info/
+dist/
+*.pyc
+*.swp
+*.tmp

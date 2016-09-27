@@ -19,10 +19,10 @@ USAGE
     usage: cos_dumps [-h] -b BUCKET -a APPID -i ACCESS_ID -k SECRET_KEY
                      [-o OUTPUT_FILE] [--with-directory]
 
-                     optional arguments:
-                       -h, --help            show this help message and exit
-                         -b BUCKET, --bucket BUCKET
-                                                 your bucket name(required)
+    optional arguments:
+          -h, --help            show this help message and exit
+          -b BUCKET, --bucket BUCKET
+                                  your bucket name(required)
           -a APPID, --appid APPID
                                   your appid(required)
           -i ACCESS_ID, --accesskey ACCESS_ID
