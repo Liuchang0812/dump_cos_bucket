@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='cos_dumps_file_list',
-    version='0.0.2',
+    version='0.0.3',
     packages=['dump_bucket'],
     url='https://www.qcloud.com/',
     license='MIT',

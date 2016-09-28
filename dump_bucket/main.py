@@ -7,7 +7,7 @@ from logging import getLogger, basicConfig, DEBUG, INFO
 basicConfig(level=INFO, stream=sys.stdout)
 logger = getLogger('__name__')
 
-def dfs_(client, bucket, path,max_retry=5, with_dir=True, file=sys.stdout):
+def dfs_(client, appid, bucket, path,max_retry=5, with_dir=True, file=sys.stdout):
     logger.info("try to dump file list under {}".format(path))
 
     _finish = False
@@ -27,13 +27,13 @@ def dfs_(client, bucket, path,max_retry=5, with_dir=True, file=sys.stdout):
             for item in ret['data']['infos']:
                 if 'filelen' in item:
                     # file
-                    file.write("{prefix}{filename}\n".format(prefix=path, filename=item['name']))
+                    file.write("/{appid}/{bucket}{prefix}{filename}\n".format(appid=appid, bucket=bucket, prefix=path, filename=item['name']))
                 else:
                     _sub_dir = "{prefix}{filename}/".format(prefix=path, filename=item['name'])
                     if with_dir:
-                        file.write(_sub_dir+'\n')
+                        file.write("/{appid}/{bucket}{path}\n".format(appid=appid, bucket=bucket, path=_sub_dir))
 
-                    dfs_(client, bucket, _sub_dir, max_retry, with_dir, file)
+                    dfs_(client, appid, bucket, _sub_dir, max_retry, with_dir, file)
                     # directory
 
         if max_retry == 0:
@@ -41,17 +41,19 @@ def dfs_(client, bucket, path,max_retry=5, with_dir=True, file=sys.stdout):
             logger.error("reach max retry times, finish this directory {}".format(path))
 
     logger.info("finish directory {}".format(path))
+
 def dumps_file_list(opt):
 
     # create cos client
     client = CosClient(appid=opt.appid, secret_id=opt.access_id, secret_key=opt.secret_key)
-
+    import os 
+    print(os.getcwd())
     if opt.output_file == "-":
         _file = sys.stdout
     else:
         _file = open(opt.output_file, 'w') 
 
-    dfs_(client, opt.bucket, '/', with_dir=opt.with_directory, file=_file)
+    dfs_(client, opt.appid, opt.bucket, '/', with_dir=opt.with_directory, file=_file)
 
 
 def _main():
