@@ -7,13 +7,17 @@ from logging import getLogger, basicConfig, DEBUG, INFO
 basicConfig(level=INFO, stream=sys.stdout)
 logger = getLogger('__name__')
 
-def dfs_(client, appid, bucket, path,max_retry=5, with_dir=True, file=sys.stdout):
+
+def dfs_(client, bucket, path,max_retry=5, with_dir=True, file=sys.stdout, only_dir=False):
     logger.info("try to dump file list under {}".format(path))
 
     _finish = False
     _context = u''
     while not _finish:
-        request = ListFolderRequest(bucket_name=bucket, cos_path=path, context=_context)
+        if only_dir:
+            request = ListFolderRequest(bucket_name=bucket, cos_path=path, context=_context, pattern='eListDirOnly')
+        else:
+            request = ListFolderRequest(bucket_name=bucket, cos_path=path, context=_context)
         ret = client.list_folder(request)
 
         logger.debug(str(ret))
@@ -27,13 +31,14 @@ def dfs_(client, appid, bucket, path,max_retry=5, with_dir=True, file=sys.stdout
             for item in ret['data']['infos']:
                 if 'filelen' in item:
                     # file
-                    file.write("/{appid}/{bucket}{prefix}{filename}\n".format(appid=appid, bucket=bucket, prefix=path, filename=item['name']))
+                    if not only_dir:
+                        file.write("{prefix}{filename}\n".format(prefix=path, filename=item['name']).encode('utf-8'))
                 else:
                     _sub_dir = "{prefix}{filename}/".format(prefix=path, filename=item['name'])
-                    if with_dir:
-                        file.write("/{appid}/{bucket}{path}\n".format(appid=appid, bucket=bucket, path=_sub_dir))
+                    if with_dir or only_dir:
+                        file.write((_sub_dir+'\n').encode('utf-8'))
 
-                    dfs_(client, appid, bucket, _sub_dir, max_retry, with_dir, file)
+                    dfs_(client, bucket, _sub_dir, max_retry, with_dir, file, only_dir)
                     # directory
 
         if max_retry == 0:
@@ -42,18 +47,18 @@ def dfs_(client, appid, bucket, path,max_retry=5, with_dir=True, file=sys.stdout
 
     logger.info("finish directory {}".format(path))
 
+
 def dumps_file_list(opt):
 
     # create cos client
     client = CosClient(appid=opt.appid, secret_id=opt.access_id, secret_key=opt.secret_key)
-    import os 
-    print(os.getcwd())
+
     if opt.output_file == "-":
         _file = sys.stdout
     else:
-        _file = open(opt.output_file, 'w') 
+        _file = open(opt.output_file, 'w')
 
-    dfs_(client, opt.appid, opt.bucket, '/', with_dir=opt.with_directory, file=_file)
+    dfs_(client, opt.bucket, '/', with_dir=opt.with_directory, file=_file, only_dir=opt.only_directory)
 
 
 def _main():
@@ -64,6 +69,7 @@ def _main():
     parse.add_argument('-i', '--accesskey', dest='access_id', required=True, help='your accesskey(required)', type=unicode)
     parse.add_argument('-k', '--secretkey', dest='secret_key', required=True, help='your secretkey(required)', type=unicode)
     parse.add_argument('-o', '--output', dest='output_file', default='-', help='file name that saves contents(default: stdout)')
+    parse.add_argument('--only-directory', dest='only_directory', default=False, action='store_true', help='dump files list only directory(default: False')
     parse.add_argument('--with-directory', dest='with_directory', default=False, action='store_true', help='dump file list with directory(default: False')
     opt = parse.parse_args()
 

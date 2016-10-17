@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='cos_dumps_file_list',
-    version='0.0.3',
+    version='0.0.1',
     packages=['dump_bucket'],
     url='https://www.qcloud.com/',
     license='MIT',
@@ -12,12 +12,13 @@ setup(
     description='simple tool that could be used to dump file list within cos bucket',
     entry_points={
         'console_scripts': [
-            'cos_dumps = dump_bucket.main:_main'
+            'cos_dumps = dump_bucket.main:main'
         ]
     },
     install_requires=[
         'qcloud-cos',
-        'requests'
+        'requests',
+        'argparse'
     ],
     package=find_packages(),
 )
